@@ -1,0 +1,84 @@
+---
+services:
+
+  broker:
+    image: apache/kafka:latest
+    environment:
+      KAFKA_BROKER_ID: '1'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${SERVER}:9092
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@${SERVER}:9093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS.TOPIC.REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+    healthcheck:
+      test:
+        - 'CMD'
+        - '/bin/bash'
+        - '-xe'
+        - '-c'
+        - |
+          cd /opt/kafka/bin/
+          ./kafka-cluster.sh cluster-id --bootstrap-server "${SERVER}:9092"
+      interval: 1s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+      start_interval: 3s
+
+  init:
+    image: apache/kafka:latest
+    depends_on:
+      broker:
+        condition: service_healthy
+    command:
+      - bash
+      - -cx
+      - |
+        cd /opt/kafka/bin/
+
+        # echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        # echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        # echo "XXX                                                                          XXX"
+        # echo "XXX Create Topic                                                             XXX"
+        # echo "XXX                                                                          XXX"
+        # echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        # echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+        hostname -f
+        ping -c 1 "${SERVER}"
+        ./kafka-cluster.sh cluster-id --bootstrap-server "${SERVER}:9092"
+        ./kafka-topics.sh --bootstrap-server "${SERVER}:9092" --create --topic "${TOPIC}"
+        sleep 2
+
+  producer_sh:
+    image: apache/kafka:latest
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command:
+      - bash
+      - -cx
+      - |
+        cd /opt/kafka/bin/
+        while true
+        do
+          echo "Test message at $(date)" | ./kafka-console-producer.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}"
+          sleep 3
+        done
+
+  consumer_sh:
+    image: apache/kafka:latest
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command:
+      - bash
+      - -cx
+      - |
+        cd /opt/kafka/bin/
+        ping -c 1 "${SERVER}"
+        ./kafka-console-consumer.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}" --from-beginning
