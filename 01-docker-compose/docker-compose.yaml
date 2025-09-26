@@ -1,6 +1,8 @@
 ---
 services:
 
+  ########################################################################################################################
+  ########################################################################################################################
   broker:
     image: apache/kafka:latest
     environment:
@@ -29,6 +31,8 @@ services:
       start_period: 5s
       start_interval: 3s
 
+  ########################################################################################################################
+  ########################################################################################################################
   init:
     image: apache/kafka:latest
     depends_on:
@@ -48,12 +52,13 @@ services:
         # echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         # echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
-        hostname -f
         ping -c 1 "${SERVER}"
         ./kafka-cluster.sh cluster-id --bootstrap-server "${SERVER}:9092"
         ./kafka-topics.sh --bootstrap-server "${SERVER}:9092" --create --topic "${TOPIC}"
         sleep 2
 
+  ########################################################################################################################
+  ########################################################################################################################
   producer_sh:
     image: apache/kafka:latest
     depends_on:
@@ -70,6 +75,8 @@ services:
           sleep 3
         done
 
+  ########################################################################################################################
+  ########################################################################################################################
   consumer_sh:
     image: apache/kafka:latest
     depends_on:
@@ -80,5 +87,36 @@ services:
       - -cx
       - |
         cd /opt/kafka/bin/
-        ping -c 1 "${SERVER}"
         ./kafka-console-consumer.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}" --from-beginning
+
+  ########################################################################################################################
+  ########################################################################################################################
+  producer_perf_sh:
+    image: apache/kafka:latest
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command:
+      - bash
+      - -cx
+      - |
+        cd /opt/kafka/bin/
+        echo "bootstrap.servers=${SERVER}:9092" > /tmp/producer.properties
+        ./kafka-producer-perf-test.sh --producer.config /tmp/producer.properties --topic "${TOPIC}" \
+          --num-records ${PERF_NUM_MSG} --throughput 1000000 --record-size 500
+
+  ########################################################################################################################
+  ########################################################################################################################
+  consumer_perf_sh:
+    image: apache/kafka:latest
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command:
+      - bash
+      - -cx
+      - |
+        cd /opt/kafka/bin/
+        sleep 2
+        ./kafka-consumer-perf-test.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}" \
+          --messages ${PERF_NUM_MSG}
