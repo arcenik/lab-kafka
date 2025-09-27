@@ -142,3 +142,21 @@ services:
     depends_on:
       init:
         condition: service_completed_successfully
+
+  ########################################################################################################################
+  ########################################################################################################################
+  producer_dotnet:
+    image: kafkademo:dotnetproducer
+    build: ./docker-dotnet-prod
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  ########################################################################################################################
+  ########################################################################################################################
+  consumer_dotnet:
+    image: kafkademo:dotnetconsumer
+    build: ./docker-dotnet-cons
+    depends_on:
+      init:
+        condition: service_completed_successfully
