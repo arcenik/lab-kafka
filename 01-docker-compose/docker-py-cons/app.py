@@ -19,7 +19,7 @@ def main():
   consumer = KafkaConsumer(TOPIC, bootstrap_servers=SERVER)
 
   for msg in consumer:
-    pp(msg)
+    pp(msg.value)
     sys.stdout.flush()
 
 ################################################################################

@@ -68,12 +68,13 @@ services:
         condition: service_completed_successfully
     command:
       - bash
-      - -cx
+      - -c
       - |
         cd /opt/kafka/bin/
+        echo "Starting Bash Producer"
         while true
         do
-          echo "Test message at $(date)" | ./kafka-console-producer.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}"
+          echo "Test message from Bash at $(date)" | ./kafka-console-producer.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}"
           sleep 3
         done
 
@@ -86,9 +87,10 @@ services:
         condition: service_completed_successfully
     command:
       - bash
-      - -cx
+      - -c
       - |
         cd /opt/kafka/bin/
+        echo "Starting Bash Consumer"
         ./kafka-console-consumer.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}" --from-beginning
 
   ########################################################################################################################

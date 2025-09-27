@@ -26,12 +26,14 @@ docker compose up producer_sh consumer_sh
 After a fews second you should see the logs from the producer and the consumer
 
 ```text
-producer_sh-1  | + true
-producer_sh-1  | + ./kafka-console-producer.sh --bootstrap-server kafka-broker-1:9092 --topic test-topic
-producer_sh-1  | ++ date
-producer_sh-1  | + echo 'Test message at Fri Sep 26 15:14:33 UTC 2025'
-consumer_sh-1  | Test message at Fri Sep 26 15:14:33 UTC 2025
-producer_sh-1  | + sleep 3
+ ✔ Container kafka-broker-1       Running
+ ✔ Container kafka-producer_sh-1  Created
+ ✔ Container kafka-consumer_sh-1  Created
+Attaching to consumer_sh-1, producer_sh-1
+producer_sh-1  | Starting Bash Producer
+consumer_sh-1  | Starting Bash Consumer
+consumer_sh-1  | Test message from Bash at Sat Sep 27 10:01:13 UTC 2025
+consumer_sh-1  | Test message from Bash at Sat Sep 27 10:01:18 UTC 2025
 ```
 
 Use CTRL+c to stop it.
@@ -75,10 +77,15 @@ docker compose up producer_py consumer_py
 After a fews second you should see the logs from the producer and the consumer
 
 ```text
-consumer_py-1  | Starting Python Consumer for test-topic on kafka-broker-1:9092
+ ✔ Container kafka-broker-1       Running
+ ✔ Container kafka-producer_py-1  Created
+ ✔ Container kafka-consumer_py-1  Created
+Attaching to consumer_py-1, producer_py-1
 producer_py-1  | Starting Python Producer for test-topic on kafka-broker-1:9092
-consumer_py-1  | ConsumerRecord(topic='test-topic', partition=0, leader_epoch=0, offset=0, timestamp=1758963801693, timestamp_type=0, key=None, value=b'Test message at 2025-09-27 09:03:21', headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=35, serialized_header_size=-1)
-consumer_py-1  | ConsumerRecord(topic='test-topic', partition=0, leader_epoch=0, offset=1, timestamp=1758963804702, timestamp_type=0, key=None, value=b'Test message at 2025-09-27 09:03:24', headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=35, serialized_header_size=-1)
+consumer_py-1  | Starting Python Consumer for test-topic on kafka-broker-1:9092
+consumer_py-1  | b'Test message from Python at 2025-09-27 09:56:51'
+consumer_py-1  | b'Test message from Python at 2025-09-27 09:56:54'
+consumer_py-1  | b'Test message from Python at 2025-09-27 09:56:57'
 ```
 
 Use CTRL+c to stop it.

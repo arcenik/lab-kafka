@@ -20,7 +20,7 @@ def main():
   producer = KafkaProducer(bootstrap_servers=SERVER)
   while True:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    producer.send(TOPIC, bytes(f"Test message at {now}",encoding='utf8'))
+    producer.send(TOPIC, bytes(f"Test message from Python at {now}",encoding='utf8'))
     producer.flush()
     time.sleep(3)
 
