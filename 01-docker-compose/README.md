@@ -1,11 +1,26 @@
 # Docker compose based Kafka playground
 
-## Start the shell based producer/consumer
+## Start the broker
 
-Start the stack using docker compose
+Start the broker in detached mode.
 
 ```sh
-docker compose up broker init producer_sh consumer_sh
+docker compose up -d broker init
+```
+
+After a few seconds, the broker container is running and healthy.
+
+```text
+NAME             IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+kafka-broker-1   apache/kafka:latest   "/__cacert_entrypoin…"   broker    40 minutes ago   Up 42 seconds (healthy)   0.0.0.0:32769->9092/tcp, [::]:32769->9092/tcp
+```
+
+## Start the shell based producer/consumer
+
+Start the services using docker compose
+
+```sh
+docker compose up producer_sh consumer_sh
 ```
 
 After a fews second you should see the logs from the producer and the consumer
@@ -19,13 +34,9 @@ consumer_sh-1  | Test message at Fri Sep 26 15:14:33 UTC 2025
 producer_sh-1  | + sleep 3
 ```
 
+Use CTRL+c to stop it.
+
 ## Start the shell based perf demo
-
-Start the broker
-
-```sh
-docker compose up -d broker init
-```
 
 Start the test
 
@@ -53,22 +64,24 @@ consumer_perf_sh-1  | 2025-09-26 17:44:37:720, 2025-09-26 17:44:42:136, 476.8389
 consumer_perf_sh-1 exited with code 0
 ```
 
-## Stop the demo
+## Starting the Python based demo
 
-Simply use CTRL+c
-It take a few seconds to stop and output something like this:
+Start the services using docker compose
+
+```sh
+docker compose up producer_py consumer_py
+```
+
+After a fews second you should see the logs from the producer and the consumer
 
 ```text
-broker-1       | [2025-09-26 15:15:57,947] INFO [MetadataLoader id=1] closed event queue. (org.apache.kafka.queue.KafkaEventQueue)
-broker-1       | [2025-09-26 15:15:57,947] INFO [SnapshotGenerator id=1] closed event queue. (org.apache.kafka.queue.KafkaEventQueue)
-broker-1       | [2025-09-26 15:15:57,947] INFO Metrics scheduler closed (org.apache.kafka.common.metrics.Metrics)
-broker-1       | [2025-09-26 15:15:57,947] INFO Closing reporter org.apache.kafka.common.metrics.JmxReporter (org.apache.kafka.common.metrics.Metrics)
-broker-1       | [2025-09-26 15:15:57,947] INFO Metrics reporters closed (org.apache.kafka.common.metrics.Metrics)
-broker-1       | [2025-09-26 15:15:57,948] INFO App info kafka.server for 1 unregistered (org.apache.kafka.common.utils.AppInfoParser)
-broker-1       | [2025-09-26 15:15:57,948] INFO App info kafka.server for 1 unregistered (org.apache.kafka.common.utils.AppInfoParser)
- Container kafka-broker-1  Stopped
-broker-1 exited with code 143
+consumer_py-1  | Starting Python Consumer for test-topic on kafka-broker-1:9092
+producer_py-1  | Starting Python Producer for test-topic on kafka-broker-1:9092
+consumer_py-1  | ConsumerRecord(topic='test-topic', partition=0, leader_epoch=0, offset=0, timestamp=1758963801693, timestamp_type=0, key=None, value=b'Test message at 2025-09-27 09:03:21', headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=35, serialized_header_size=-1)
+consumer_py-1  | ConsumerRecord(topic='test-topic', partition=0, leader_epoch=0, offset=1, timestamp=1758963804702, timestamp_type=0, key=None, value=b'Test message at 2025-09-27 09:03:24', headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=35, serialized_header_size=-1)
 ```
+
+Use CTRL+c to stop it.
 
 ## Clean up
 

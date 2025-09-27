@@ -16,6 +16,8 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS.TOPIC.REPLICATION_FACTOR: '1'
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+    ports:
+      - 9092
     healthcheck:
       test:
         - 'CMD'
@@ -120,3 +122,21 @@ services:
         sleep 2
         ./kafka-consumer-perf-test.sh --bootstrap-server "${SERVER}:9092" --topic "${TOPIC}" \
           --messages ${PERF_NUM_MSG}
+
+  ########################################################################################################################
+  ########################################################################################################################
+  producer_py:
+    image: kafkademo:pyproducer
+    build: ./docker-py-prod
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  ########################################################################################################################
+  ########################################################################################################################
+  consumer_py:
+    image: kafkademo:pyconsumer
+    build: ./docker-py-cons
+    depends_on:
+      init:
+        condition: service_completed_successfully
